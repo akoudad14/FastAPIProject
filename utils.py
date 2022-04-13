@@ -40,3 +40,7 @@ def download_cities_price():
         price = round(float(row['loypredm2'].replace(',', '.')), 2)
         cities_price[row['INSEE']] = price
     return cities_price
+
+
+scrap_cities_score()
+download_cities_price()
