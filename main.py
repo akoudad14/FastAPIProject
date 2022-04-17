@@ -1,4 +1,5 @@
 
+import csv
 from fastapi import FastAPI
 import json
 import requests
@@ -8,8 +9,12 @@ import utils
 TOWN_URL = 'https://geo.api.gouv.fr/departements/{}/communes?fields=nom,code,codesPostaux,population&format=json&geometry=centre'
 
 app = FastAPI()
-cities_score = utils.scrap_cities_score()
-cities_price = utils.download_cities_price()
+with open(utils.SCORE_FILE, "r") as f:
+    reader = csv.DictReader(f)
+    cities_score = {rows['city']: float(rows['score']) for rows in reader}
+with open(utils.PRICE_FILE, "r") as f:
+    reader = csv.DictReader(f)
+    cities_price = {rows['insee']: float(rows['price']) for rows in reader}
 
 
 @app.get("/")
@@ -19,9 +24,6 @@ def cities_root(departement_code: int, area: int, max_rent: int):
 
 
 def get_cities(departement_code: int, area: int, max_rent: int) -> list:
-    global cities_price
-    global cities_score
-
     cities = get_cities_info(departement_code)
     cities = filter_cities_by_price(cities, area, max_rent)
     return cities
@@ -53,7 +55,7 @@ def filter_cities_by_price(cities: list, area: int, max_rent: int) -> list:
             try:
                 city['score'] = cities_score[city['name']]
             except KeyError:
-                print(city['name'])
+                pass
             else:
                 cities_filtered.append(city)
     return cities_filtered
