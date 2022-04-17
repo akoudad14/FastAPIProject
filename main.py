@@ -1,5 +1,4 @@
 
-import csv
 from fastapi import FastAPI
 import json
 import requests
@@ -9,12 +8,8 @@ import utils
 TOWN_URL = 'https://geo.api.gouv.fr/departements/{}/communes?fields=nom,code,codesPostaux,population&format=json&geometry=centre'
 
 app = FastAPI()
-with open(utils.SCORE_FILE, "r") as f:
-    reader = csv.DictReader(f)
-    cities_score = {rows['city']: float(rows['score']) for rows in reader}
-with open(utils.PRICE_FILE, "r") as f:
-    reader = csv.DictReader(f)
-    cities_price = {rows['insee']: float(rows['price']) for rows in reader}
+cities_score = utils.scrap_cities_score()
+cities_price = utils.download_cities_price()
 
 
 @app.get("/")

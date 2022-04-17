@@ -5,14 +5,12 @@ import io
 import requests
 
 SCORE_URL = 'https://www.bien-dans-ma-ville.fr/classement-ville-global/?page={}'
-SCORE_FILE = 'score.csv'
 PRICE_URL = 'https://www.data.gouv.fr/fr/datasets/r/8fac6fb7-cd07-4747-8e0b-b101c476f0da'
-PRICE_FILE = 'price.csv'
 
 
 def scrap_cities_score():
     i = 1
-    cities_score = list()
+    cities_score = dict()
     finished = False
     while not finished:
         url = SCORE_URL.format(i)
@@ -27,14 +25,9 @@ def scrap_cities_score():
             for tr in trs:
                 tds = tr.find_all('td')
                 city = ' '.join(tds[1].get_text().split()[:-1]).lower()
-                score = tds[-1].get_text()
-                cities_score.append({'city': city, 'score': score})
+                score = float(tds[-1].get_text())
+                cities_score[city] = score
             i += 1
-    fieldnames = ['city', 'score']
-    with open(SCORE_FILE, 'w', encoding='UTF8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(cities_score)
     return cities_score
 
 
@@ -42,15 +35,10 @@ def download_cities_price():
     r = requests.get(PRICE_URL)
     r.encoding = 'utf-8'
     csvio = io.StringIO(r.text, newline="")
-    cities_price = list()
+    cities_price = dict()
     for row in csv.DictReader(csvio, delimiter=';'):
         price = round(float(row['loypredm2'].replace(',', '.')), 2)
-        cities_price.append({'insee': row['INSEE'], 'price': price})
-    fieldnames = ['insee', 'price']
-    with open(PRICE_FILE, 'w', encoding='UTF8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(cities_price)
+        cities_price[row['INSEE']] = price
     return cities_price
 
 
