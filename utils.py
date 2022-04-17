@@ -8,7 +8,12 @@ SCORE_URL = 'https://www.bien-dans-ma-ville.fr/classement-ville-global/?page={}'
 PRICE_URL = 'https://www.data.gouv.fr/fr/datasets/r/8fac6fb7-cd07-4747-8e0b-b101c476f0da'
 
 
-def scrap_cities_score():
+def scrap_cities_score() -> dict:
+    """Retrieve cities score based on www.bien-dans-ma-ville.fr .
+
+    Returns:
+        A dict containing for each city (the key), the score (the value).
+    """
     i = 1
     cities_score = dict()
     finished = False
@@ -31,17 +36,18 @@ def scrap_cities_score():
     return cities_score
 
 
-def download_cities_price():
+def download_cities_rent() -> dict:
+    """Retrieve the average rent of a city, identified by INSEE,
+    based on www.data.gouv.fr .
+
+    Returns:
+        A dict containing for each insee code (the key), the rent (the value).
+    """
     r = requests.get(PRICE_URL)
     r.encoding = 'utf-8'
     csvio = io.StringIO(r.text, newline="")
-    cities_price = dict()
+    cities_rent = dict()
     for row in csv.DictReader(csvio, delimiter=';'):
-        price = round(float(row['loypredm2'].replace(',', '.')), 2)
-        cities_price[row['INSEE']] = price
-    return cities_price
-
-
-if __name__ == '__main__':
-    scrap_cities_score()
-    download_cities_price()
+        rent = round(float(row['loypredm2'].replace(',', '.')), 2)
+        cities_rent[row['INSEE']] = rent
+    return cities_rent
