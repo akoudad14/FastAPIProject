@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from csv import DictReader
 from io import StringIO
 import requests
-from typing import Tuple
 
 SCORE_URL = 'https://www.bien-dans-ma-ville.fr/classement-ville-global/?page={}'
 PRICE_URL = 'https://www.data.gouv.fr/fr/datasets/r/8fac6fb7-cd07-4747-8e0b-b101c476f0da'
@@ -19,18 +18,19 @@ def scrap_cities_score() -> dict:
     cities_score = dict()
     finished = False
     while not finished:
-        city, score = scrap_city_score(i)
-        if city is not None and score is not None:
+        cities = scrap_city_score_from_one_page(i)
+        if cities:
+            cities_score.update(cities)
             i += 1
         else:
             finished = True
     return cities_score
 
 
-def scrap_city_score(page: int) -> Tuple[str, float]:
+def scrap_city_score_from_one_page(page: int) -> dict:
     url = SCORE_URL.format(page)
-    city, score = None, None
     res = requests.get(url)
+    cities_score = dict()
     if not res.history or res.history[0].status_code != 301:
         soup = BeautifulSoup(res.content, 'html.parser')
         section = soup.find('section', id="classement")
@@ -40,7 +40,8 @@ def scrap_city_score(page: int) -> Tuple[str, float]:
             tds = tr.find_all('td')
             city = ' '.join(tds[1].get_text().split()[:-1]).lower()
             score = float(tds[-1].get_text())
-    return city, score
+            cities_score[city] = score
+    return cities_score
 
 
 def download_cities_rent() -> dict:

@@ -18,3 +18,11 @@ The URI is relative to *http://127.0.0.1:8000/*
 HTTP request | Arguments | Description
 ------------- | ------------- | -------------
 **GET** / | department_code: int, area: int, max_rent: int | Allow to retrieve a list of cities filtered by department, area and the average rent.
+
+## Testing
+
+In order to check the reliability of the different modules of the project, it is possible to launch a set of unit tests.
+
+```bash
+python -m pytest .
+```

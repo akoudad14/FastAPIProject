@@ -3,7 +3,7 @@
 # or a different PYTORCH (https://hub.docker.com/r/pytorch/pytorch/) base image
 FROM python:slim
 
-COPY main.py /app/
+COPY app.py /app/
 COPY utils.py /app/
 COPY requirements.txt /app/
 
@@ -13,4 +13,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0"]

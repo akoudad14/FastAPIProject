@@ -8,7 +8,7 @@ import utils
 
 class TestUtils(TestCase):
 
-    @mock.patch('utils.scrap_city_score', return_value=(None, None))
+    @mock.patch('utils.scrap_city_score_from_one_page', return_value={})
     def test_scrapping_finished(
             self,
             scrap_mock: Mock):
@@ -36,7 +36,7 @@ class TestUtils(TestCase):
         tr_mock.find_all.return_value = [Mock(), city_mock, score_mock]
         tbody_mock.find_all.return_value = [tr_mock]
 
-        city, score = utils.scrap_city_score(page)
+        cities_score = utils.scrap_city_score_from_one_page(page)
 
         requests_mock.get.assert_called_once_with(utils.SCORE_URL.format(page))
         res_mock = requests_mock.get.return_value
@@ -45,8 +45,7 @@ class TestUtils(TestCase):
         section_mock.find.assert_called_once_with('tbody')
         tbody_mock.find_all.assert_called_once_with('tr')
         tr_mock.find_all.assert_called_once_with('td')
-        self.assertEqual(city, "city")
-        self.assertEqual(score, 3.6)
+        self.assertEqual(cities_score, {'city': 3.6})
 
     @mock.patch('utils.requests')
     def test_scrapping_failed(
@@ -57,10 +56,9 @@ class TestUtils(TestCase):
         requests_mock.get().history = [history_mock]
         page = Mock()
 
-        city, score = utils.scrap_city_score(page)
+        cities_score = utils.scrap_city_score_from_one_page(page)
 
-        self.assertIsNone(city)
-        self.assertIsNone(score)
+        self.assertEqual(cities_score, {})
 
     @mock.patch('utils.DictReader', return_value=[{'loypredm2': '8,456789',
                                                    'INSEE': 'INSEE_CODE'}])
