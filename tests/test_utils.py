@@ -6,7 +6,7 @@ from unittest import mock
 import utils
 
 
-class TestCommonPredict(TestCase):
+class TestUtils(TestCase):
 
     @mock.patch('utils.scrap_city_score', return_value=(None, None))
     def test_scrapping_finished(
@@ -61,3 +61,32 @@ class TestCommonPredict(TestCase):
 
         self.assertIsNone(city)
         self.assertIsNone(score)
+
+    @mock.patch('utils.DictReader', return_value=[{'loypredm2': '8,456789',
+                                                   'INSEE': 'INSEE_CODE'}])
+    @mock.patch('utils.StringIO')
+    @mock.patch('utils.requests')
+    def test_download_succeed(
+            self,
+            requests_mock: Mock,
+            string_io_mock: Mock,
+            reader_mock: Mock):
+        res_mock = requests_mock.get.return_value
+        res_mock.status_code = 200
+        text_mock = Mock()
+        res_mock.text = text_mock
+
+        cities_rent = utils.download_cities_rent()
+
+        string_io_mock.assert_called_once_with(text_mock, newline="")
+        reader_mock.assert_called_once_with(string_io_mock.return_value,
+                                            delimiter=";")
+        self.assertEqual(cities_rent, {'INSEE_CODE': 8.46})
+
+    @mock.patch('utils.requests')
+    def test_download_failed(
+            self,
+            requests_mock: Mock):
+        cities_rent = utils.download_cities_rent()
+
+        self.assertEqual(cities_rent, {})

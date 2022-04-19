@@ -1,7 +1,7 @@
 
 from bs4 import BeautifulSoup
-import csv
-import io
+from csv import DictReader
+from io import StringIO
 import requests
 from typing import Tuple
 
@@ -51,11 +51,11 @@ def download_cities_rent() -> dict:
         A dict containing for each insee code (the key), the rent (the value).
     """
     cities_rent = dict()
-    r = requests.get(PRICE_URL)
-    if r.status_code == 200:
-        r.encoding = 'utf-8'
-        csvio = io.StringIO(r.text, newline="")
-        for row in csv.DictReader(csvio, delimiter=';'):
+    res = requests.get(PRICE_URL)
+    if res.status_code == 200:
+        res.encoding = 'utf-8'
+        csvio = StringIO(res.text, newline="")
+        for row in DictReader(csvio, delimiter=';'):
             rent = round(float(row['loypredm2'].replace(',', '.')), 2)
             cities_rent[row['INSEE']] = rent
     return cities_rent
