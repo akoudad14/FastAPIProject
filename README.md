@@ -1,4 +1,4 @@
-# axione-test
+# Fast API Project
 
 We want to create an API which allows to give cities list of the most
 interesting for the user depending on the price per m² (for apartment rental)
